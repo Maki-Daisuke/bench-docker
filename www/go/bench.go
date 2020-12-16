@@ -8,7 +8,6 @@ import (
 	"math"
 	"os"
 	"runtime"
-	"runtime/pprof"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -115,6 +114,23 @@ func work(db *sql.DB) {
 	}
 	defer file.Close()
 
+	stmt, err := db.Prepare(`
+		INSERT INTO users (
+			name,
+			email,
+			email_verified_at,
+			password,
+			remember_token,
+			created_at,
+			updated_at
+		) values (
+			?, ?, ?, ?, ?, ?, ?
+		);
+	`)
+	if err != nil {
+		panic(err)
+	}
+
 	reader = csv.NewReader(file)
 	_, err = reader.Read() // ヘッダースキップ
 	for {
@@ -124,19 +140,7 @@ func work(db *sql.DB) {
 		}
 
 		// lines[0]はidのため1から
-		_, err = db.Exec(`
-			INSERT INTO users (
-				name,
-				email,
-				email_verified_at,
-				password,
-				remember_token,
-				created_at,
-				updated_at
-			) values (
-				?, ?, ?, ?, ?, ?, ?
-			);
-		`, lines[1], lines[2], lines[3], lines[4], lines[5], lines[6], lines[7])
+		_, err = stmt.Exec(lines[1], lines[2], lines[3], lines[4], lines[5], lines[6], lines[7])
 		if err != nil {
 			panic(err)
 		}
@@ -251,17 +255,6 @@ func printTime(message string) {
 
 // メイン処理
 func main() {
-	f, err := os.Create("cpuprofile")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "could not create file: ", err)
-		os.Exit(1)
-	}
-	defer f.Close()
-	if err := pprof.StartCPUProfile(f); err != nil {
-		fmt.Fprintln(os.Stderr, "could not start CPU profile: ", err)
-		os.Exit(1)
-	}
-	defer pprof.StopCPUProfile()
 
 	println("Go " + runtime.Version())
 
