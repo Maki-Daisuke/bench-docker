@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -250,6 +251,17 @@ func printTime(message string) {
 
 // メイン処理
 func main() {
+	f, err := os.Create("cpuprofile")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "could not create file: ", err)
+		os.Exit(1)
+	}
+	defer f.Close()
+	if err := pprof.StartCPUProfile(f); err != nil {
+		fmt.Fprintln(os.Stderr, "could not start CPU profile: ", err)
+		os.Exit(1)
+	}
+	defer pprof.StopCPUProfile()
 
 	println("Go " + runtime.Version())
 
