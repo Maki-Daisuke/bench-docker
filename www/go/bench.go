@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -155,10 +156,10 @@ func work(db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	buf := bufio.NewWriter(file)
 
 	// ヘッダー書き込み
-	_, err = file.WriteString(`"id","name","email","email_verified_at","password","remember_token","created_at","updated_at"` + "\n")
+	_, err = buf.WriteString(`"id","name","email","email_verified_at","password","remember_token","created_at","updated_at"` + "\n")
 	if err != nil {
 		panic(err)
 	}
@@ -190,11 +191,14 @@ func work(db *sql.DB) {
 			user.CreatedAt.Format("2006-01-02 15:04:05"),
 			user.UpdatedAt.Format("2006-01-02 15:04:05"))
 
-		_, err = file.WriteString(line)
+		_, err = buf.WriteString(line)
 		if err != nil {
 			panic(err)
 		}
 	}
+
+	buf.Flush()
+	file.Close()
 	printTime("export CSV end")
 
 	// 入力CSVと出力CSVを突合
