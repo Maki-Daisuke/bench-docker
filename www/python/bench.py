@@ -1,4 +1,5 @@
 import csv
+import math
 import os
 import sys
 from itertools import zip_longest
@@ -179,7 +180,12 @@ def main():
         times.append(s)
 
     svg = sum(times) / len(times)
-    print('平均秒数：%f' % svg)
+    # 標準偏差を計算
+    sdev = 0.0
+    for t in times:
+        sdev += (t - svg) ** 2
+    sdev = math.sqrt(sdev / len(times))
+    print('平均秒数：%f, 標準偏差: %.1f' % (svg, sdev))
 
 
 if __name__ == '__main__':

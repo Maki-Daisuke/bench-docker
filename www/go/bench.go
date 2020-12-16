@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"runtime"
 	"time"
@@ -281,6 +282,12 @@ func main() {
 		sum += s
 	}
 	avg := float64(sum / float64(len(times)))
-	println(fmt.Printf("平均秒数：%f", avg))
+	// 標準偏差を計算
+	sdev := 0.0
+	for _, t := range times {
+		sdev += math.Pow(avg-t, 2)
+	}
+	sdev = math.Sqrt(sdev / float64(len(times)))
+	println(fmt.Printf("平均秒数：%f, 標準偏差: %.1f", avg, sdev))
 
 }
